@@ -10,8 +10,8 @@ import java.util.List;
 
 public interface ProductController {
 
-    @PostMapping(value = "/product", produces = "application/json", consumes = "application/json")
-    Mono<Product> createProduct(@RequestBody Product body);
+//    @PostMapping(value = "/product", produces = "application/json", consumes = "application/json")
+    Mono<Product> createProduct(Product body);
 
     @GetMapping(value = "/product/{productId}", produces = "application/json")
     Mono<Product> getProduct(@PathVariable int productId);
@@ -19,8 +19,8 @@ public interface ProductController {
     @GetMapping("/products")
     Flux<Product> getAll();
 
-    @DeleteMapping(value = "/product/{productId}")
-    Mono<Void> deleteProduct(@PathVariable int productId);
+//    @DeleteMapping(value = "/product/{productId}")
+    Mono<Void> deleteProduct(int productId);
 
     //function for testing Webclient
     @GetMapping("/webClientTest")

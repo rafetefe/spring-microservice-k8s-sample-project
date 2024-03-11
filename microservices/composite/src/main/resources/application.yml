@@ -1,7 +1,7 @@
 springdoc:
   swagger-ui.path: /openapi/swagger-ui.html
   api-docs.path: /openapi/v3/api-docs
-  packagesToScan: rafetefe.microservices.composite
+  packagesToScan: rafetefe.composite
   pathsToMatch: /**
 
 api:
@@ -13,3 +13,21 @@ api:
     contact:
       name: rafetefe
       url: https://github.com/rafetefe/
+
+server.port: 7000
+
+app:
+  product:
+    host: 0.0.0.0
+    port: 7001
+
+spring.cloud.stream:
+  defaultBinder: kafka
+  default.contentType: application/json
+  bindings:
+    products-out-0:
+      destination: products
+
+spring.cloud.stream.kafka.binder:
+  brokers: 127.0.0.1
+  defaultBrokerPort: 9092
