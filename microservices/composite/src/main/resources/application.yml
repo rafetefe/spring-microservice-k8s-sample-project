@@ -1,0 +1,15 @@
+springdoc:
+  swagger-ui.path: /openapi/swagger-ui.html
+  api-docs.path: /openapi/v3/api-docs
+  packagesToScan: rafetefe.microservices.composite
+  pathsToMatch: /**
+
+api:
+  common:
+    version: 1.0.0
+    title: ecommerce-microservice-docs
+    description: sampleDescription
+
+    contact:
+      name: rafetefe
+      url: https://github.com/rafetefe/

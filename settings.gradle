@@ -1,1 +1,5 @@
-rootProject.name = 'ecommerce'
+include ':microservices:api'
+include ':microservices:cart'
+include ':microservices:composite'
+include ':microservices:order'
+include ':microservices:product'
