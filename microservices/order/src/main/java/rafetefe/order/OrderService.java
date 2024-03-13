@@ -10,6 +10,8 @@ import rafetefe.api.Entity.Status;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 import static java.util.logging.Level.FINE;
 
 @RestController
@@ -22,6 +24,13 @@ public class OrderService implements OrderController {
     @Autowired
     public OrderService(OrderRepository orderRepository){
         this.orderRepository = orderRepository;
+    }
+
+    @Override
+    public Mono<Void> createOrder(Order newOrder){
+        return this.orderRepository.save(newOrder).log(LOG.getName(), FINE)
+                .onErrorMap(ex->new RuntimeException("createOrder error:"+ex.getMessage()))
+                .then();
     }
 
     @Override

@@ -17,12 +17,8 @@ public interface ProductController {
     Mono<Product> getProduct(@PathVariable int productId);
 
     @GetMapping("/products")
-    Flux<Product> getAll();
+    Flux<Product> getAllProducts();
 
 //    @DeleteMapping(value = "/product/{productId}")
     Mono<Void> deleteProduct(int productId);
-
-    //function for testing Webclient
-    @GetMapping("/webClientTest")
-    Mono<String> webClientTest();
 }

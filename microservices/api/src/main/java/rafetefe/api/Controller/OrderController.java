@@ -9,8 +9,12 @@ import reactor.core.publisher.Mono;
 
 import rafetefe.api.Entity.Order;
 
-@RequestMapping("/order")
+import java.util.List;
+
 public interface OrderController {
+
+//    @PostMapping("/order")
+    Mono<Void> createOrder(Order newOrder);
 
     @GetMapping("/ongoing")
     Flux<Order> getOngoingOrders();
@@ -21,8 +25,9 @@ public interface OrderController {
     @GetMapping("/cancelled")
     Flux<Order> getCancelledOrders();
 
+    //can be event driven. but is not going to be in used in this version of the project.
     @PostMapping("/cancel/{orderId}")
-    Mono<Void> cancelOrder(@PathVariable int orderId);
+    Mono<Void> cancelOrder(@PathVariable int orderId);  
 
     @PostMapping("/complete/{orderId}")
     Mono<Void> completeOrder(@PathVariable int orderId);

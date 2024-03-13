@@ -44,9 +44,9 @@ public class Cart {
     public void removeByProductId(Integer idToRemove){
         //can be made faster by using cartElementNo rather productID
         //but no need to optimize atm
-        for (int i = 0; i < content.size(); i++) {
-            if(content.get(i).equals(idToRemove)){
-                content.remove(i);
+        for (int i = 0; i < this.content.size(); i++) {
+            if(this.content.get(i).equals(idToRemove)){
+                this.content.remove(i);
                 return;
             }
         }

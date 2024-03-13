@@ -12,17 +12,17 @@ import reactor.core.publisher.Mono;
 
 public interface CartController {
 
-    @DeleteMapping("/cart/{productId}")
-    Mono<Cart> removeFromCart(@PathVariable int productId);
+//    @DeleteMapping("/cart/{productId}")
+    Mono<Void> removeFromCart(@PathVariable int productId);
 
-    @DeleteMapping("/cart")
-    Mono<Cart> clearCart();
+//    @DeleteMapping("/cart")
+    Mono<Void> clearCart();
 
 //    @PostMapping("/cart")
 //    Mono<Order> submitCart();
 
 //    @PostMapping("/cart/{productId}")
-//    Mono<Cart> addToCart(@PathVariable int productId);
+    Mono<Void> addToCart(@PathVariable int productId);
 
     @GetMapping("/cart")
     Flux<Integer> getCartContent();

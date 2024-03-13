@@ -34,7 +34,7 @@ public class ProductService implements ProductController {
                 .onErrorMap(
                         DuplicateKeyException.class,
                         ex->new Exception("Product with same ID already exists."+body.getProductId())
-                );//drop creation if product already exists.
+                );//drop creation if product already exists. | this handle doesn't work, registration still seem to be occurring
     }
 
     @Override
@@ -46,7 +46,7 @@ public class ProductService implements ProductController {
     }
 
     @Override
-    public Flux<Product> getAll() {
+    public Flux<Product> getAllProducts() {
         return productRepository.findAll()
                 .log(LOG.getName(), FINE)
                 .onErrorMap(ex -> new Exception("Error on getAll:"+ex.getMessage()));
@@ -60,11 +60,6 @@ public class ProductService implements ProductController {
                 .onErrorMap(ex -> new Exception("LOG Error on deleteByProductId:"+ex.getMessage()));
 
         //idempotent function
-    }
-
-    @Override
-    public Mono<String> webClientTest(){
-        return Mono.just("hello");
     }
 
 }

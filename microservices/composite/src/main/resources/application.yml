@@ -20,6 +20,12 @@ app:
   product:
     host: 0.0.0.0
     port: 7001
+  order:
+    host: 0.0.0.0
+    port: 7002
+  cart:
+    host: 0.0.0.0
+    port: 7003
 
 spring.cloud.stream:
   defaultBinder: kafka
@@ -27,7 +33,13 @@ spring.cloud.stream:
   bindings:
     products-out-0:
       destination: products
+    orders-out-0:
+      destination: orders
+    carts-out-0:
+      destination: carts
 
 spring.cloud.stream.kafka.binder:
   brokers: 127.0.0.1
   defaultBrokerPort: 9092
+
+---

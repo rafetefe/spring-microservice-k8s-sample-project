@@ -7,7 +7,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import rafetefe.api.Controller.CartController;
+import rafetefe.api.Controller.OrderController;
 import rafetefe.api.Controller.ProductController;
+import rafetefe.api.Entity.Cart;
+import rafetefe.api.Entity.Order;
 import rafetefe.api.Entity.Product;
 import rafetefe.api.Event;
 import reactor.core.publisher.Flux;
@@ -17,12 +21,16 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.cloud.stream.function.StreamBridge;
 import reactor.core.scheduler.Scheduler;
 
+import java.util.List;
 import java.util.logging.Level;
 
+import static java.util.logging.Level.FINE;
 import static rafetefe.api.Event.Type.CREATE;
+import static rafetefe.api.Event.Type.DELETE;
+import static reactor.core.publisher.Flux.empty;
 
 @Component
-public class CompositeIntegration implements ProductController {
+public class CompositeIntegration implements ProductController, CartController, OrderController {
 
     private static final Logger LOG = LoggerFactory.getLogger(CompositeIntegration.class);
 
@@ -30,29 +38,34 @@ public class CompositeIntegration implements ProductController {
 
     private String productHostname;
     private int productPort;
+    private String cartHostname;
+    private int cartPort;
+    private String orderHostname;
+    private int orderPort;
 
     private StreamBridge streamBridge;
 
     private Scheduler publishEventScheduler;
 
-    //things to test.
-    // due to our implementing the core service controllers
-    // we have method for calling every core-service.
-    // check if this necessary?
-    // todo
-    // after doing implementing all methods for communicating with cores
-    // check if commenting some functions still allow for semi utilization of core services.
+    private int userId = 2024;
 
     /*
     * Notes while generating urls.
     * http:// is required at the begining. for numeric ips or domainnames (localhost)
     *
+    *
+    * If event returns a output, use streamBridge.fromCallable
+    * if returns void/none, use sB.fromRunnable
     * */
 
     @Autowired
     public CompositeIntegration(WebClient.Builder webClient,
                                 @Value("${app.product.host}") String productHostname,
                                 @Value("${app.product.port}") int productPort,
+                                @Value("${app.cart.host}") String cartHostname,
+                                @Value("${app.cart.port}") int cartPort,
+                                @Value("${app.order.host}") String orderHostname,
+                                @Value("${app.order.port}") int orderPort,
                                 StreamBridge streamBridge,
                                 @Qualifier("publishEventScheduler") Scheduler publishEventScheduler){
         this.webClient = webClient.build();
@@ -61,6 +74,10 @@ public class CompositeIntegration implements ProductController {
 
         this.productHostname = productHostname;
         this.productPort = productPort;
+        this.orderHostname = orderHostname;
+        this.orderPort = orderPort;
+        this.cartHostname = cartHostname;
+        this.cartPort = cartPort;
     }
 
     private void sendMessage(String bindingName, Event event) {
@@ -71,6 +88,7 @@ public class CompositeIntegration implements ProductController {
         streamBridge.send(bindingName, message);
     }
 
+    //                  PRODUCT                     //
     @Override
     public Mono<Product> createProduct(Product body) {
         // send the request to core service.
@@ -92,25 +110,81 @@ public class CompositeIntegration implements ProductController {
         String functionURL="http://"+productHostname+":"+productPort+"/product/"+productId;
         return webClient.get().uri(functionURL)
                 .retrieve().bodyToMono(Product.class)
-                .log(LOG.getName(), Level.FINE)
+                .log(LOG.getName(), FINE)
                 .onErrorMap(ex->new Exception("compositeIntegration.getProduct error:"+ex.getMessage()));
     }
 
     @Override
-    public Flux<Product> getAll() {
-        return null;
+    public Flux<Product> getAllProducts() {
+        String functionURL = "http://"+productHostname+":"+productPort+"/products";
+        return webClient.get().uri(functionURL).retrieve().bodyToFlux(Product.class).log(LOG.getName(), FINE).onErrorResume(error -> empty());
     }
 
     @Override
     public Mono<Void> deleteProduct(int productId) {
+        return Mono.fromRunnable(() -> sendMessage("products-out-0", new Event(DELETE, userId, productId)))
+                .subscribeOn(publishEventScheduler).then();
+    }
+
+    //                      CART                        //
+    @Override
+    public Mono<Void> removeFromCart(int productId) {
+        return Mono.fromRunnable(() -> sendMessage("carts-out-0", new Event(DELETE, userId, productId)))
+                .subscribeOn(publishEventScheduler).then();
+    }
+
+    @Override
+    public Mono<Void> clearCart() {
+        return Mono.fromRunnable(() -> sendMessage("carts-out-0", new Event(DELETE, userId, null)))
+                .subscribeOn(publishEventScheduler).then();
+    }
+
+    @Override
+    public Mono<Void> addToCart(int productId){
+        return Mono.fromRunnable(() -> sendMessage("carts-out-0", new Event(CREATE, userId, productId)))
+                .subscribeOn(publishEventScheduler).then();
+    }
+
+    @Override
+    public Flux<Integer> getCartContent() {
+        // return webClient.get().uri(url).retrieve().bodyToFlux(Recommendation.class).log(LOG.getName(), FINE).onErrorResume(error -> empty());
+        String functionURL = "http://"+cartHostname+":"+cartPort+"/cart";
+        return webClient.get().uri(functionURL).retrieve().bodyToFlux(Integer.class).log(LOG.getName(), FINE).onErrorResume(error -> empty());
+    }
+
+    //                  ORDER                   //
+
+    @Override
+    public Mono<Void> createOrder(Order newOrder){
+        return Mono.fromRunnable(() -> sendMessage("orders-out-0", new Event(CREATE, userId, newOrder)))
+            .subscribeOn(publishEventScheduler).then();
+    }
+
+    @Override
+    public Flux<Order> getOngoingOrders() {
+        String functionURL = "http://"+orderHostname+":"+orderPort+"/ongoing";
+        return webClient.get().uri(functionURL).retrieve().bodyToFlux(Order.class).log(LOG.getName(), FINE).onErrorResume(error -> empty());
+    }
+
+    @Override
+    public Flux<Order> getCompleteOrders() {
+        String functionURL = "http://"+orderHostname+":"+orderPort+"/complete";
+        return webClient.get().uri(functionURL).retrieve().bodyToFlux(Order.class).log(LOG.getName(), FINE).onErrorResume(error -> empty());
+    }
+
+    @Override
+    public Flux<Order> getCancelledOrders() {
+        String functionURL = "http://"+orderHostname+":"+orderPort+"/cancelled";
+        return webClient.get().uri(functionURL).retrieve().bodyToFlux(Order.class).log(LOG.getName(), FINE).onErrorResume(error -> empty());
+    }
+
+    @Override
+    public Mono<Void> cancelOrder(int orderId) {
         return null;
     }
 
     @Override
-    public Mono<String> webClientTest() {
+    public Mono<Void> completeOrder(int orderId) {
         return null;
     }
-    //this is like repository of core microservices. but
-    //communicates with other services instead of a db.
-
 }

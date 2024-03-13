@@ -22,12 +22,12 @@ public class Order {
     @Indexed(unique = true)
     private int orderId;
     private int ownerId;
-    private List<Product> content;
+    private List<Integer> content;
     private Date dateOrderInitiated;
     private Date dateOrderCompleted;
     private Status status;
 
-    public Order(List<Product> content, int ownerId){
+    public Order(List<Integer> content, int ownerId){
         this.content = content;
         this.ownerId = ownerId;
         this.dateOrderInitiated = new Date();
@@ -69,11 +69,11 @@ public class Order {
         this.status = status;
     }
 
-    public List<Product> getContent() {
+    public List<Integer> getContent() {
         return content;
     }
 
-    public void setContent(List<Product> content) {
+    public void setContent(List<Integer> content) {
         this.content = content;
     }
 
