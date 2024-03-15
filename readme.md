@@ -1,1 +1,1 @@
-(Ongoing) Currently at event driven disturbited state, lacks the configuration of supporting services and kubernetes settings.
+(Ongoing) Currently at event driven distributed state, lacks the configuration of supporting services and kubernetes settings.
