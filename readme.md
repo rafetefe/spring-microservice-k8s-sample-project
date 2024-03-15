@@ -1,6 +1,1 @@
-
-Converted system to reactive webflux.
-Implemented tests using junit, webtestclient, stepverifer
-
-Resources:
-
+(Ongoing) Currently at event driven disturbited state, lacks the configuration of supporting services and kubernetes settings.
